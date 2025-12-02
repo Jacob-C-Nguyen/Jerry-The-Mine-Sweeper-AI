@@ -97,7 +97,7 @@ while True:
             if buttonRect.collidepoint(mouse):
                 instructions = False
                 time.sleep(0.3)
-
+                
         pygame.display.flip()
         continue
 
