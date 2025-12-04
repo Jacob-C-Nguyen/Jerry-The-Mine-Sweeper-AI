@@ -145,10 +145,7 @@ while True:
 
 
 
-    # AI Move button #################################################################################
-    #
-    #       Maybe add another one
-    #
+    # AI Move Singular button 
     aiButton = pygame.Rect(
         (2 / 3) * width + BOARD_PADDING, (1 / 3) * height - 50,
         (width / 3) - BOARD_PADDING * 2, 50
