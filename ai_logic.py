@@ -19,16 +19,16 @@ class MinesweeperAI:
         self.cache_mine = {}
 
         self.neighbor_sets = {
-            (r, c): list(self._neighbors(r, c))
+            (r, c): list(self.neighbors(r, c))
             for r in range(self.rows)
             for c in range(self.cols)
         }
 
         self.frontier = set()
-        self._add_static_rules()
+        self.add_static_rules()
 
 
-    def _neighbors(self, r, c):
+    def neighbors(self, r, c):
         for dr in [-1, 0, 1]:
             for dc in [-1, 0, 1]:
                 if dr == 0 and dc == 0:
@@ -37,13 +37,14 @@ class MinesweeperAI:
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
                     yield nr, nc
 
-
-    def _add_static_rules(self):
+    
+    def add_static_rules(self):
         for r in range(self.rows):
             for c in range(self.cols):
                 self.solver.add(Or(self.mine[r][c], Not(self.mine[r][c])))
 
 
+    #adds numbered spaces to solver
     def add_observation(self, r, c, number, defer_update=False):
         if (r, c) in self.observed:
             return
@@ -51,18 +52,14 @@ class MinesweeperAI:
         self.observed.add((r, c))
         self.opened.add((r, c))
 
-        # Zero = no constraints, but mark safe
         self.solver.add(self.mine[r][c] == False)
 
-        # 0s in knowledgebase add no value
         if number == 0:
             return
 
-        # Only numbered cells go into solver
         neighbor_exprs = [If(self.mine[nr][nc], 1, 0) for nr, nc in self.neighbor_sets[(r, c)]]
         self.solver.add(Sum(neighbor_exprs) == number)
 
-        # frontier update
         for nr, nc in self.neighbor_sets[(r, c)]:
             if (nr, nc) not in self.opened and (nr, nc) not in self.flags:
                 self.frontier.add((nr, nc))
@@ -73,15 +70,15 @@ class MinesweeperAI:
         self.cache_mine.clear()
 
         if not defer_update:
-            self._update_flags_deterministic()
+            self.update_flags_deterministic()
 
 
     def process_frontier(self):
         if self.frontier:
-            self._update_flags_deterministic()
+            self.update_flags_deterministic()
 
 
-    def _update_flags_deterministic(self):
+    def update_flags_deterministic(self):
         if self.frontier:
             candidates = list(self.frontier)
         else:
@@ -115,7 +112,7 @@ class MinesweeperAI:
 
 
     def make_safe_move(self):
-        self._update_flags_deterministic()
+        self.update_flags_deterministic()
 
         frontier_list = list(self.frontier)
 
@@ -153,7 +150,7 @@ class MinesweeperAI:
 
 
     def make_random_move(self):
-        self._update_flags_deterministic()
+        self.update_flags_deterministic()
 
         candidates = list(self.frontier) + [
             (r, c)

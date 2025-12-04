@@ -1,3 +1,8 @@
+#The GUI for the project
+#   TAKEN FROM:     (Hiroki39's AI-Minesweeper): "runner.py"
+#   AT:             https://github.com/Hiroki39/AI-Minesweeper
+
+
 import pygame
 import sys
 import time
@@ -43,7 +48,6 @@ mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
 # Create game and AI agent
 game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-######################################################################################################
 ai = MinesweeperAI(height=HEIGHT, width=WIDTH)
 
 # Keep track of revealed cells, flagged cells, and if a mine was hit
@@ -195,13 +199,10 @@ while True:
 
         # If AI button clicked, make an AI move
         if aiButton.collidepoint(mouse) and not lost:
-            #################################################################################
             move = ai.make_safe_move()
             if move is None:
-                #################################################################################
                 move = ai.make_random_move()
                 if move is None:
-                    ##################################################################################
                     flags = ai.get_flags().copy()
                     print("No moves left to make.")
                 else:
@@ -213,7 +214,6 @@ while True:
         # Reset game state
         elif resetButton.collidepoint(mouse):
             game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-            ##################################################################################
             ai = MinesweeperAI(height=HEIGHT, width=WIDTH)
             revealed = set()
             flags = set()
@@ -236,7 +236,6 @@ while True:
         else:
             nearby = game.nearby_mines(move)
             revealed.add(move)
-            ##################################################################################
             ai.add_observation(move[0], move[1], nearby)
             if not nearby:
                 # Loop over all cells within one row and column

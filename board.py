@@ -1,6 +1,6 @@
 #creates and updates the board
-#   TAKEN FROM:     /
-#   AT:             /
+#   TAKEN FROM:     (Hiroki39's AI-Minesweeper): "minesweeper.py"
+#   AT:             https://github.com/Hiroki39/AI-Minesweeper
 
 
 import itertools
