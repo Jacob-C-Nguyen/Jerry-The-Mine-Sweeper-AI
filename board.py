@@ -1,9 +1,7 @@
-#creates and updates the board
+#creates and updates the board for the GUI
 #   TAKEN FROM:     (Hiroki39's AI-Minesweeper): "minesweeper.py"
 #   AT:             https://github.com/Hiroki39/AI-Minesweeper
 
-
-import itertools
 import random
 
 

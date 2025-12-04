@@ -49,6 +49,7 @@ mine = pygame.transform.scale(mine, (cell_size, cell_size))
 # Create game and AI agent
 game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
 ai = MinesweeperAI(height=HEIGHT, width=WIDTH)
+auto_mode = False   #for the auto button
 
 # Keep track of revealed cells, flagged cells, and if a mine was hit
 revealed = set()
@@ -160,6 +161,23 @@ while True:
     pygame.draw.rect(screen, WHITE, aiButton)
     screen.blit(buttonText, buttonRect)
 
+
+    # Auto Solve Toggle Button
+    autoButton = pygame.Rect(
+        (2 / 3) * width + BOARD_PADDING, (1 / 3) * height + 90,
+        (width / 3) - BOARD_PADDING * 2, 50
+    )
+    autoText = mediumFont.render(
+        "Auto: ON" if auto_mode else "Auto: OFF",
+        True, BLACK
+    )
+    autoTextRect = autoText.get_rect()
+    autoTextRect.center = autoButton.center
+
+    pygame.draw.rect(screen, WHITE, autoButton)
+    screen.blit(autoText, autoTextRect)
+
+
     # Reset button
     resetButton = pygame.Rect(
         (2 / 3) * width + BOARD_PADDING, (1 / 3) * height + 20,
@@ -175,8 +193,9 @@ while True:
     text = "Lost" if lost else "Won" if game.mines == flags else ""
     text = mediumFont.render(text, True, WHITE)
     textRect = text.get_rect()
-    textRect.center = ((5 / 6) * width, (2 / 3) * height)
+    textRect.center = (aiButton.centerx, autoButton.bottom + 30)
     screen.blit(text, textRect)
+    
 
     move = None
 
@@ -209,6 +228,13 @@ while True:
                     print("No known safe moves, AI making random move.")
             else:
                 print("AI making safe move.")
+            time.sleep(0.2)
+
+        # If the auto button is clicked, repeat AI moves until
+        # the game finished or the player stops it manually 
+        elif autoButton.collidepoint(mouse):
+            auto_mode = not auto_mode
+            print("AUTO MODE:", auto_mode)
             time.sleep(0.2)
 
         # Reset game state
@@ -253,5 +279,25 @@ while True:
     if move:
         if make_move(move):
             lost = True
+
+    # Automatic AI Solver Mode
+    if auto_mode and not lost:
+        move = ai.make_safe_move()
+        move_type = "safe"
+
+        if move is None:
+            move = ai.make_random_move()
+            move_type = "random"
+
+        if move is None:
+            flags = ai.get_flags().copy()
+            auto_mode = False
+            print("Auto mode stopped: no moves left.")
+        else:
+            print(f"AUTO: {move_type} move {move}")
+            if make_move(move):
+                lost = True
+                auto_mode = False
+            time.sleep(0.05)
 
     pygame.display.flip()

@@ -4,16 +4,19 @@ from z3 import *
 
 
 class MinesweeperAI:
+
+    #create and define the board for the AI to use
     def __init__(self, height, width):
         self.rows = height
         self.cols = width
 
         self.solver = Solver()
+
+        # mine[r][c] = Bool variable representing “cell (r,c) is a mine” (true = mine, false = safe)
         self.mine = [[Bool(f"m_{r}_{c}") for c in range(self.cols)] for r in range(self.rows)]
 
         self.opened = set()
         self.flags = set()
-        self.observed = set()
 
         self.cache_safe = {}
         self.cache_mine = {}
@@ -24,10 +27,10 @@ class MinesweeperAI:
             for c in range(self.cols)
         }
 
-        self.frontier = set()
-        self.add_static_rules()
+        self.frontier = set()   #spaces around the numbered spaces (spaces to look at next)
 
 
+    #finds the neighbors around a space (excluding self)
     def neighbors(self, r, c):
         for dr in [-1, 0, 1]:
             for dc in [-1, 0, 1]:
@@ -37,19 +40,12 @@ class MinesweeperAI:
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
                     yield nr, nc
 
-    
-    def add_static_rules(self):
-        for r in range(self.rows):
-            for c in range(self.cols):
-                self.solver.add(Or(self.mine[r][c], Not(self.mine[r][c])))
 
-
-    #adds numbered spaces to solver
+    #adds numbered spaces to solver's knowledge base
     def add_observation(self, r, c, number, defer_update=False):
-        if (r, c) in self.observed:
+        if (r, c) in self.opened:
             return
-
-        self.observed.add((r, c))
+        
         self.opened.add((r, c))
 
         self.solver.add(self.mine[r][c] == False)
@@ -73,20 +69,20 @@ class MinesweeperAI:
             self.update_flags_deterministic()
 
 
-    def process_frontier(self):
-        if self.frontier:
-            self.update_flags_deterministic()
-
-
+    # checks spaces that are unknown neighbors of frontier spaces (spaces next to numbered spaces)
+    # assume the space is safe and prove by contridiction if the space is safe or not
+    # updates the z3 solver with information about the space
     def update_flags_deterministic(self):
         if self.frontier:
             candidates = list(self.frontier)
         else:
-            candidates = [(r, c) for r in range(self.rows) for c in range(self.cols)
+            candidates = [(r, c) for r in range(self.rows) for c in range(self.cols)        #checking unknown spaces if frontier is empty
                           if (r, c) not in self.opened and (r, c) not in self.flags]
 
         newly_flagged = set()
 
+
+        #see if each candidate space is a mine or not
         for (r, c) in candidates:
             if (r, c) in self.opened or (r, c) in self.flags:
                 continue
@@ -111,6 +107,8 @@ class MinesweeperAI:
             self.cache_mine.clear()
 
 
+    #based on the solver's logic determining a space to be safe,
+    #make that move on the board
     def make_safe_move(self):
         self.update_flags_deterministic()
 
@@ -148,7 +146,7 @@ class MinesweeperAI:
 
         return None
 
-
+    #if no real moves are available, the AI MUST make a choice based on probability
     def make_random_move(self):
         self.update_flags_deterministic()
 
